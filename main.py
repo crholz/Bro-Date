@@ -4,6 +4,7 @@ Bro Date Generator
 
 import pickle
 import pandas
+import random
 import os
 
 def print_options():
@@ -11,9 +12,14 @@ def print_options():
     print("[2] Select File")
     print("[3] Insert Pairs")
     print("[4] Generate Groups")
-    print("[5] Exit")
-    print("[6] Visualize Table")
+    print("[5] Visualize Table")
+    print("[6] Exit")
 
+
+def findKey(diction, user_val):
+    for key, value in diction.items():
+        if value == user_val:
+            return key
 
 # Start of Main
 selected = ""
@@ -115,10 +121,76 @@ while (1):
                     if (second_name not in file_data[0]):
                         print("{} not found...".format(second_name))
 
-    elif (user_choice == 5):
-        break
+
+    elif (user_choice == 4):
+        used_names = []
+        saved_file = open("Generated Pairs.txt", "a+")
+        if (selected == ""):
+            print("No File Selected")
+
+        else:
+            for name in file_data[0]:
+                empty_locs = []
+                emp_count = 0
+
+                # Ignore if name is already used
+                if name in used_names:
+                    continue
+
+                else:
+                    # Create an array of all of the empty locations
+                    for element in file_data[1][file_data[2][name]]:
+                        if element == 0:
+                            empty_locs.append(emp_count)
+
+                        emp_count = emp_count + 1
+
+                    # Generate Pair
+                    # Find how many open slots
+                    open_slots = len(empty_locs)
+
+                    if open_slots == 0:
+                        print("{} has had a date with everyone...".format(name))
+
+                    else:
+                        # Generate a random number
+                        idx = random.randint(0, open_slots - 1)
+
+                        # Find the val to be used
+                        val = empty_locs[idx]
+
+                        paired_name = findKey(file_data[2], val)
+
+                        while (paired_name in used_names and len(used_names) < 18):
+                            # Generate a random number
+                            idx = random.randint(0, open_slots - 1)
+
+                            # Find the val to be used
+                            val = empty_locs[idx]
+
+                            paired_name = findKey(file_data[2], val)
+
+
+                        used_names.append(name)
+                        used_names.append(paired_name)
+
+                        file_data[1][file_data[2][name]][file_data[2][paired_name]] = 1
+                        file_data[1][file_data[2][paired_name]][file_data[2][name]] = 1
+                        pickle.dump(file_data, open("{}".format(selected), 'wb'))
+
+                        print(name + " + " + paired_name)
+                        print("-----------")
+                        saved_file.write(name + " + " + paired_name + "\n")
+                        saved_file.write("-----------\n")
+
+        saved_file.close()
+
+
 
     elif (user_choice == 6):
+        break
+
+    elif (user_choice == 5):
         if (selected != ""):
             print("\t\t", end = '')
             for name in file_data[0]:
